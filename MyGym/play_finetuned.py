@@ -15,7 +15,7 @@ episode = 0
 try:
     while True:
         observation, info = env.reset()
-        total_reward = 0
+        total_reward = 0.0
         episode += 1
 
         while True:
@@ -30,7 +30,7 @@ try:
                 int(action)
             )
 
-            total_reward += reward
+            total_reward += float(reward)
 
             print(
                 f"Episode={episode} "
@@ -45,7 +45,9 @@ try:
         base_env = env.unwrapped
         success = (
             terminated
-            and not base_env.game_over
+            #and not base_env.game_over
+            and not getattr(base_env, 'ppo_lunar', False)
+
 	    and not getattr(base_env, 'ppo_lunar', False)
             #fail? and not base_env.ppo_lunar
         )

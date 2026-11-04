@@ -15,7 +15,7 @@ episode = 0
 try:
     while True:
         observation, info = env.reset()
-        total_reward = 0
+        total_reward = 0.0
         episode += 1
 
         while True:
@@ -30,7 +30,8 @@ try:
                 int(action)
             )
 
-            total_reward += reward
+            #mark total_reward += reward
+            total_reward += float(reward)
 
             print(
                 f"Episode={episode} "
@@ -46,8 +47,11 @@ try:
 
         success = (
             terminated
-            and not base_env.game_over
-            and not base_env.lander.awake
+            #and not base_env.game_over
+            #and not base_env.lander.awake
+            and not getattr(base_env, 'game_over', False)
+            #and not getattr(getattr(base_env, 'game_over', False)
+            and not getattr(getattr(base_env, "lander", None), "awake", False)
         )
 
         print(f"Total Reward: {total_reward:.2f}")
