@@ -1,6 +1,5 @@
-import sys
 #python mujoco_viewer.py ./model.xml
-
+import sys
 import time
 import mujoco
 import mujoco.viewer
