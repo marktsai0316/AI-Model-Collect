@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
+
+#sudo apt update
+#sudo apt install -y libportaudio2 portaudio19-dev
+
+
+#uv add librosa sounddevice numpy mujoco
+#python 3.13
+
+
 """Beat-synchronised MicroDuck dance in CPU MuJoCo (simulation only)."""
+
+
+
+
 import argparse
 import time
 from pathlib import Path
@@ -17,7 +30,7 @@ JOINTS = (
 )
 
 def find_scene(root):
-    base = root / 'dance/microduck_rl-develop/src/mjlab_microduck/robot/microduck'
+    base = root / 'test/microduck_rl-develop/src/mjlab_microduck/robot/microduck'
     #base = './microduck_rl-develop/src/mjlab_microduck/robot/microduck'
     for name in ('scene.xml', 'scene_walk.xml', 'scene_groundcontact.xml'):
         p = base / name
@@ -114,7 +127,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('music', type=Path)
     ap.add_argument('--scene', type=Path)
-    ap.add_argument('--scale', type=float, default=0.6)
+  
+    ap.add_argument('--scale', type=float, default=8.0)
     ap.add_argument('--offset', type=float, default=0.0, help='Audio timing correction in seconds')
     args = ap.parse_args()
     if not args.music.is_file():
@@ -125,6 +139,40 @@ def main():
     bpm, beats, rms_t, rms, duration = analyze(args.music)
     print(f'BPM={bpm:.1f}, beats={len(beats)}, duration={duration:.1f}s')
     model = mujoco.MjModel.from_xml_path(str(scene))
+
+    # 關閉重力
+    #model.opt.gravity[:] = [0.0, 0.0, 0.0]
+    model.opt.gravity[:] = 0
+
+    # 找到 freejoint 所在的 Root Body
+    root_body_id = -1
+
+    for j in range(model.njnt):
+       if model.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE:
+          root_body_id = int(model.jnt_bodyid[j])
+          break
+
+    if root_body_id < 0:
+       raise RuntimeError("找不到 Root freejoint")
+
+    # 將 Root Body 固定到 World
+    spec = mujoco.MjSpec.from_file(str(scene))
+
+    # 在模型編譯前加入 weld
+    root_name = mujoco.mj_id2name(
+        model, mujoco.mjtObj.mjOBJ_BODY, root_body_id
+    )
+
+    weld = spec.add_equality()
+    weld.type = mujoco.mjtEq.mjEQ_WELD
+    weld.name = "root_fixed"
+    weld.objtype = mujoco.mjtObj.mjOBJ_BODY
+    weld.name1 = root_name
+    weld.name2 = "world"
+
+    model = spec.compile()
+
+
     data = mujoco.MjData(model)
     base, actuators = pose(model, data)
     # The project scene has position actuators; do not use this on motor/voltage XML.
