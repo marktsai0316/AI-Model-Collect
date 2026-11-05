@@ -1,0 +1,34 @@
+<mujoco model="axis_on_ground">
+  <!-- 畫面與視覺設定 -->
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+  </visual>
+
+  <!-- 貼圖與材質設定 -->
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texrepeat="5 5" texuniform="true" reflectance="0.2"/>
+  </asset>
+
+  <worldbody>
+    <!-- 環境燈光 -->
+    <light directional="true" diffuse=".8 .8 .8" specular="0.2 0.2 0.2" pos="0 0 3" dir="0 0 -1"/>
+    
+    <!-- 地板網格 (Z=0 平面) -->
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" condim="3"/>
+
+    <!-- 座標軸（緊貼地板：pos="0 0 0.005" 讓半徑 5mm 的柱體剛好貼在地面上） -->
+    <body name="axis" pos="0 0 0.000">
+      <!-- X 軸（紅色） -->
+      <geom name="axis_x" type="cylinder" size="0.005 0.1" pos="0.1 0 0" quat="0.7071 0 0.7071 0" rgba="1 0 0 1" contype="0" conaffinity="0"/>
+      <!-- Y 軸（綠色） -->
+      <geom name="axis_y" type="cylinder" size="0.005 0.1" pos="0 0.1 0" quat="0.7071 -0.7071 0 0" rgba="0 1 0 1" contype="0" conaffinity="0"/>
+      <!-- Z 軸（藍色） -->
+      <geom name="axis_z" type="cylinder" size="0.005 0.1" pos="0 0 0.1" rgba="0 0 1 1" contype="0" conaffinity="0"/>
+      <!-- 原點小球 -->
+      <geom name="axis_origin" type="sphere" size="0.01" pos="0 0 0" rgba="1 1 1 1" contype="0" conaffinity="0"/>
+    </body>
+  </worldbody>
+</mujoco>
